@@ -494,6 +494,7 @@ function App() {
       await request(`/api/users/presets/${encodeURIComponent(name)}`, { method: 'DELETE' });
       const response = await request('/api/users/presets');
       setPresets(response.data || []);
+      toast.success('Preset deleted');
     } catch (error) {
       setMessage(error.message);
       toast.error(error.message);
