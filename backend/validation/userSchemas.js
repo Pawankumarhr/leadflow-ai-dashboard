@@ -1,0 +1,30 @@
+const Joi = require('joi');
+
+const createUserSchema = Joi.object({
+  firstName: Joi.string().trim().min(2).max(50).required(),
+  lastName: Joi.string().trim().min(2).max(50).required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).max(128).required(),
+  role: Joi.string().valid('admin', 'sales').optional(),
+});
+
+const refreshSchema = Joi.object({
+  refreshToken: Joi.string().required(),
+});
+
+const updateUserSchema = Joi.object({
+  role: Joi.string().valid('admin', 'sales'),
+  isActive: Joi.boolean(),
+}).min(1);
+
+const savePresetSchema = Joi.object({
+  name: Joi.string().trim().min(2).max(40).required(),
+  filters: Joi.object().required(),
+});
+
+module.exports = {
+  createUserSchema,
+  refreshSchema,
+  updateUserSchema,
+  savePresetSchema,
+};

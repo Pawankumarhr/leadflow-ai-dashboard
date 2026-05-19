@@ -1,13 +1,43 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--page-bg);
+  color: var(--text);
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+:root {
+  --page-bg: #f4f6ff;
+  --bg-gradient: radial-gradient(circle at top left, #f6f9ff, #f3f4ff 35%, #fdf6f9 70%);
+  --text: #101828;
+  --muted: #667085;
+  --card: #ffffff;
+  --primary: #2b2bf5;
+  --primary-soft: #f2f4ff;
+  --border: #d0d5dd;
+  --danger: #f04438;
+  --pill-bg: #f4f4ff;
+  --shadow: 0 10px 40px rgba(16, 24, 40, 0.08);
+}
+
+[data-theme='dark'] {
+  --page-bg: #0b0f1a;
+  --bg-gradient: radial-gradient(circle at top left, #111827, #0b0f1a 50%, #0f172a 90%);
+  --text: #f9fafb;
+  --muted: #94a3b8;
+  --card: #0f172a;
+  --primary: #7c7cff;
+  --primary-soft: rgba(124, 124, 255, 0.15);
+  --border: #1e293b;
+  --danger: #ef4444;
+  --pill-bg: rgba(124, 124, 255, 0.2);
+  --shadow: 0 10px 40px rgba(15, 23, 42, 0.6);
 }

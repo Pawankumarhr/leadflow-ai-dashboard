@@ -49,6 +49,28 @@ const leadSchema = new mongoose.Schema(
       ref: 'User',
       default: null,
     },
+    activities: [
+      {
+        type: {
+          type: String,
+          enum: ['created', 'updated', 'status_changed'],
+          required: true,
+        },
+        message: {
+          type: String,
+          required: true,
+        },
+        createdBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          default: null,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

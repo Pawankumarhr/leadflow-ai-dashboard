@@ -2,6 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const authRoutes = require('./routes/authRoutes');
+const leadRoutes = require('./routes/leadRoutes');
+const userRoutes = require('./routes/userRoutes');
+const auditRoutes = require('./routes/auditRoutes');
+const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -18,6 +23,14 @@ app.get('/health', (req, res) => {
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Backend API is working' });
 });
+
+app.use('/api/auth', authRoutes);
+app.use('/api/leads', leadRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/audit-logs', auditRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 // Start server and connect to DB
 const PORT = process.env.PORT || 5000;

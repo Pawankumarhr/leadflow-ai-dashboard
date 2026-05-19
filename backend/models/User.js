@@ -28,6 +28,34 @@ const userSchema = new mongoose.Schema(
       enum: ['admin', 'sales'],
       default: 'sales',
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    filterPresets: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        filters: {
+          type: Object,
+          default: {},
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    refreshTokenHash: {
+      type: String,
+      default: null,
+    },
+    refreshTokenExpiresAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
