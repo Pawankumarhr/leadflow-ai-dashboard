@@ -27,18 +27,35 @@ const leadSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['new', 'contacted', 'qualified', 'converted', 'lost'],
+      enum: ['new', 'contacted', 'qualified', 'converted', 'lost', 'pending'],
       default: 'new',
     },
     source: {
       type: String,
-      enum: ['website', 'referral', 'social', 'cold_call', 'event'],
+      enum: ['website', 'referral', 'social', 'cold_call', 'event', 'linkedin', 'instagram', 'cold_email'],
       required: true,
     },
     notes: {
       type: String,
       trim: true,
     },
+    notesLog: [
+      {
+        text: {
+          type: String,
+          required: true,
+        },
+        createdBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'User',
+          default: null,
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

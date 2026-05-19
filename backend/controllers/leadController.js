@@ -2,7 +2,7 @@ const Lead = require('../models/Lead');
 const { logAudit } = require('../utils/audit');
 const { toCsv } = require('../utils/csv');
 
-const buildFilter = ({ status, source, search, preset, startDate, endDate }) => {
+const buildFilter = ({ status, source, search, preset, startDate, endDate, user }) => {
   const filter = {};
 
   if (status) filter.status = status;
@@ -27,6 +27,13 @@ const buildFilter = ({ status, source, search, preset, startDate, endDate }) => 
     if (endDate) filter.createdAt.$lte = new Date(endDate);
   }
 
+  if (user?.role === 'sales') {
+    filter.$or = [
+      { createdBy: user._id },
+      { assignedTo: user._id },
+    ];
+  }
+
   return filter;
 };
 
@@ -38,6 +45,10 @@ const createLead = async (req, res) => {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
+    const assignedOwner = req.user.role === 'sales' && !assignedTo
+      ? req.user._id
+      : assignedTo;
+
     const lead = await Lead.create({
       firstName,
       lastName,
@@ -48,7 +59,7 @@ const createLead = async (req, res) => {
       source,
       notes,
       createdBy: req.user._id,
-      assignedTo: assignedTo || null,
+      assignedTo: assignedOwner || null,
       activities: [
         {
           type: 'created',
@@ -68,7 +79,7 @@ const getLeads = async (req, res) => {
   try {
     const { status, source, search, sort = 'desc', sortBy = 'createdAt', page = 1, limit = 10, preset, startDate, endDate } = req.query;
 
-    const filter = buildFilter({ status, source, search, preset, startDate, endDate });
+    const filter = buildFilter({ status, source, search, preset, startDate, endDate, user: req.user });
 
     const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
     const limitNumber = Math.min(Math.max(parseInt(limit, 10) || 10, 1), 100);
@@ -116,6 +127,14 @@ const updateLead = async (req, res) => {
       return res.status(404).json({ message: 'Lead not found' });
     }
 
+    if (req.user.role === 'sales') {
+      const ownsLead = String(lead.createdBy) === String(req.user._id)
+        || String(lead.assignedTo) === String(req.user._id);
+      if (!ownsLead) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+    }
+
     const changes = [];
     Object.keys(req.body).forEach((key) => {
       if (req.body[key] !== undefined && req.body[key] !== lead[key]) {
@@ -149,6 +168,61 @@ const updateLead = async (req, res) => {
   }
 };
 
+const addNote = async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) {
+      return res.status(404).json({ message: 'Lead not found' });
+    }
+
+    if (req.user.role === 'sales') {
+      const ownsLead = String(lead.createdBy) === String(req.user._id)
+        || String(lead.assignedTo) === String(req.user._id);
+      if (!ownsLead) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+    }
+
+    lead.notesLog.push({
+      text: req.body.text,
+      createdBy: req.user._id,
+    });
+    lead.activities.push({
+      type: 'updated',
+      message: 'Note added',
+      createdBy: req.user._id,
+    });
+
+    const updated = await lead.save();
+    return res.status(201).json(updated);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const deleteNote = async (req, res) => {
+  try {
+    const lead = await Lead.findById(req.params.id);
+    if (!lead) {
+      return res.status(404).json({ message: 'Lead not found' });
+    }
+
+    if (req.user.role === 'sales') {
+      const ownsLead = String(lead.createdBy) === String(req.user._id)
+        || String(lead.assignedTo) === String(req.user._id);
+      if (!ownsLead) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+    }
+
+    lead.notesLog = (lead.notesLog || []).filter((note) => String(note._id) !== req.params.noteId);
+    const updated = await lead.save();
+    return res.json(updated);
+  } catch (error) {
+    return res.status(500).json({ message: 'Server error' });
+  }
+};
+
 const deleteLead = async (req, res) => {
   try {
     const deleted = await Lead.findByIdAndDelete(req.params.id);
@@ -172,7 +246,7 @@ const deleteLead = async (req, res) => {
 const exportLeads = async (req, res) => {
   try {
     const { status, source, search, sort = 'desc', sortBy = 'createdAt', preset, startDate, endDate } = req.query;
-    const filter = buildFilter({ status, source, search, preset, startDate, endDate });
+    const filter = buildFilter({ status, source, search, preset, startDate, endDate, user: req.user });
     const sortOrder = sort === 'asc' ? 1 : -1;
     const sortField = ['createdAt', 'firstName', 'lastName', 'email', 'status', 'source'].includes(sortBy)
       ? sortBy
@@ -220,4 +294,6 @@ module.exports = {
   updateLead,
   deleteLead,
   exportLeads,
+  addNote,
+  deleteNote,
 };

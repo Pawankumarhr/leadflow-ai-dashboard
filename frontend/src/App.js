@@ -1,6 +1,21 @@
 import './App.css';
 import { useEffect, useMemo, useState } from 'react';
 import { request, download, API_URL } from './api/client';
+import { Toaster, toast } from 'react-hot-toast';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  CartesianGrid,
+} from 'recharts';
 
 function App() {
   const [authMode, setAuthMode] = useState('login');
@@ -44,6 +59,7 @@ function App() {
   const [leadErrors, setLeadErrors] = useState({});
   const [userErrors, setUserErrors] = useState({});
   const [activityFilter, setActivityFilter] = useState({ type: 'all', search: '' });
+  const [noteText, setNoteText] = useState('');
   const [editForm, setEditForm] = useState({
     firstName: '',
     lastName: '',
@@ -66,6 +82,13 @@ function App() {
   const [auditLogs, setAuditLogs] = useState([]);
   const [auditMeta, setAuditMeta] = useState({ total: 0, pages: 1 });
   const [auditPage, setAuditPage] = useState(1);
+  const [analytics, setAnalytics] = useState({
+    totals: { total: 0, active: 0, converted: 0, lost: 0, pending: 0 },
+    byStatus: [],
+    bySource: [],
+    conversionsByMonth: [],
+  });
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [userForm, setUserForm] = useState({
     firstName: '',
     lastName: '',
@@ -107,6 +130,24 @@ function App() {
 
     loadLeads();
   }, [isAuthed, queryString]);
+
+  useEffect(() => {
+    if (!isAuthed) return;
+
+    const loadAnalytics = async () => {
+      try {
+        setAnalyticsLoading(true);
+        const response = await request('/api/analytics');
+        setAnalytics(response);
+      } catch (error) {
+        setMessage(error.message);
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
+    loadAnalytics();
+  }, [isAuthed]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -163,6 +204,7 @@ function App() {
     const handleLogoutEvent = () => {
       setMessage('Session expired. Please log in again.');
       handleLogout();
+      toast.error('Session expired');
     };
 
     window.addEventListener('leadflow:logout', handleLogoutEvent);
@@ -245,8 +287,10 @@ function App() {
       setUser(payload.user);
       setAuthForm({ email: '', password: '', firstName: '', lastName: '' });
       setMessage('');
+      toast.success(authMode === 'login' ? 'Logged in' : 'Account created');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -285,8 +329,10 @@ function App() {
       const response = await request(`/api/leads?${queryString}`);
       setLeads(response.data || []);
       setMeta(response.meta || { total: 0, pages: 1 });
+      toast.success('Lead created');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -301,8 +347,10 @@ function App() {
       const response = await request(`/api/leads?${queryString}`);
       setLeads(response.data || []);
       setMeta(response.meta || { total: 0, pages: 1 });
+      toast.success('Lead deleted');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -321,8 +369,10 @@ function App() {
       link.remove();
       window.URL.revokeObjectURL(url);
       setMessage('CSV export ready.');
+      toast.success('CSV exported');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     } finally {
       setExporting(false);
     }
@@ -362,8 +412,10 @@ function App() {
       setMeta(response.meta || { total: 0, pages: 1 });
       setEditingLead(null);
       setMessage('Lead updated.');
+      toast.success('Lead updated');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -378,6 +430,32 @@ function App() {
       setLeads((prev) => prev.map((lead) => (lead._id === leadId ? { ...lead, status } : lead)));
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
+    }
+  };
+
+  const addNote = async (leadId, text) => {
+    try {
+      const updated = await request(`/api/leads/${leadId}/notes`, {
+        method: 'POST',
+        body: { text },
+      });
+      setEditingLead(updated);
+      toast.success('Note added');
+    } catch (error) {
+      setMessage(error.message);
+      toast.error(error.message);
+    }
+  };
+
+  const deleteNote = async (leadId, noteId) => {
+    try {
+      const updated = await request(`/api/leads/${leadId}/notes/${noteId}`, { method: 'DELETE' });
+      setEditingLead(updated);
+      toast.success('Note deleted');
+    } catch (error) {
+      setMessage(error.message);
+      toast.error(error.message);
     }
   };
 
@@ -396,8 +474,10 @@ function App() {
       setPresets(response.data || []);
       setPresetName('');
       setMessage('Preset saved.');
+      toast.success('Preset saved');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     }
   };
 
@@ -416,7 +496,17 @@ function App() {
       setPresets(response.data || []);
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     }
+  };
+
+  const statusColors = {
+    new: '#6366f1',
+    contacted: '#0ea5e9',
+    qualified: '#22c55e',
+    converted: '#16a34a',
+    lost: '#ef4444',
+    pending: '#f59e0b',
   };
 
   const submitUser = async (event) => {
@@ -448,8 +538,10 @@ function App() {
       const response = await request('/api/users');
       setUsers(response.data || []);
       setMessage('User created.');
+      toast.success('User created');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -463,8 +555,10 @@ function App() {
       });
       const response = await request('/api/users');
       setUsers(response.data || []);
+      toast.success(isActive ? 'User disabled' : 'User enabled');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     }
   };
 
@@ -475,8 +569,10 @@ function App() {
       await request(`/api/users/${userId}`, { method: 'DELETE' });
       const response = await request('/api/users');
       setUsers(response.data || []);
+      toast.success('User deleted');
     } catch (error) {
       setMessage(error.message);
+      toast.error(error.message);
     }
   };
 
@@ -502,6 +598,7 @@ function App() {
 
   return (
     <div className="app">
+      <Toaster position="top-right" />
       <header className="app-header">
         <div>
           <p className="eyebrow">Leadflow AI</p>
@@ -595,6 +692,98 @@ function App() {
         </section>
       ) : (
         <main className="dashboard">
+          <section className="card analytics">
+            <div className="card-header">
+              <div>
+                <h2>Dashboard</h2>
+                <p className="subtle">Live pipeline overview</p>
+              </div>
+            </div>
+            <div className="metric-grid">
+              {analyticsLoading ? (
+                Array.from({ length: 5 }).map((_, index) => (
+                  <div className="metric" key={`metric-${index}`}>
+                    <div className="skeleton-line" />
+                    <div className="skeleton-line large" />
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="metric">
+                    <p className="subtle">Total leads</p>
+                    <h3>{analytics.totals.total}</h3>
+                  </div>
+                  <div className="metric">
+                    <p className="subtle">Active</p>
+                    <h3>{analytics.totals.active}</h3>
+                  </div>
+                  <div className="metric">
+                    <p className="subtle">Converted</p>
+                    <h3>{analytics.totals.converted}</h3>
+                  </div>
+                  <div className="metric">
+                    <p className="subtle">Lost</p>
+                    <h3>{analytics.totals.lost}</h3>
+                  </div>
+                  <div className="metric">
+                    <p className="subtle">Pending</p>
+                    <h3>{analytics.totals.pending}</h3>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="chart-grid">
+              {analyticsLoading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <div className="chart-card" key={`chart-${index}`}>
+                    <div className="skeleton-line" />
+                    <div className="skeleton-box" />
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="chart-card">
+                    <h3>Leads by Status</h3>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <PieChart>
+                        <Pie data={analytics.byStatus} dataKey="count" nameKey="status" outerRadius={80}>
+                          {analytics.byStatus.map((entry) => (
+                            <Cell key={entry.status} fill={statusColors[entry.status] || '#94a3b8'} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="chart-card">
+                    <h3>Leads by Source</h3>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={analytics.bySource}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="source" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#6366f1" radius={[6, 6, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="chart-card">
+                    <h3>Monthly Conversions</h3>
+                    <ResponsiveContainer width="100%" height={220}>
+                      <LineChart data={analytics.conversionsByMonth}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="count" stroke="#16a34a" strokeWidth={3} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </>
+              )}
+            </div>
+          </section>
           <section className="card">
             <h2>Create Lead</h2>
             <form onSubmit={submitLead} className="form-grid">
@@ -613,6 +802,9 @@ function App() {
                 <option value="social">Social</option>
                 <option value="cold_call">Cold call</option>
                 <option value="event">Event</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="instagram">Instagram</option>
+                <option value="cold_email">Cold email</option>
               </select>
               {leadErrors.source && <span className="field-error">{leadErrors.source}</span>}
               <select name="status" value={leadForm.status} onChange={handleLeadChange}>
@@ -621,6 +813,7 @@ function App() {
                 <option value="qualified">Qualified</option>
                 <option value="converted">Converted</option>
                 <option value="lost">Lost</option>
+                <option value="pending">Pending</option>
               </select>
               <textarea name="notes" placeholder="Notes" value={leadForm.notes} onChange={handleLeadChange} rows="3" />
               <button className="btn" type="submit" disabled={loading}>
@@ -674,6 +867,7 @@ function App() {
                 <option value="qualified">Qualified</option>
                 <option value="converted">Converted</option>
                 <option value="lost">Lost</option>
+                <option value="pending">Pending</option>
               </select>
               <select name="source" value={filters.source} onChange={handleFilterChange}>
                 <option value="">All sources</option>
@@ -682,6 +876,9 @@ function App() {
                 <option value="social">Social</option>
                 <option value="cold_call">Cold call</option>
                 <option value="event">Event</option>
+                <option value="linkedin">LinkedIn</option>
+                <option value="instagram">Instagram</option>
+                <option value="cold_email">Cold email</option>
               </select>
               <select name="sort" value={filters.sort} onChange={handleFilterChange}>
                 <option value="desc">Newest first</option>
@@ -720,7 +917,18 @@ function App() {
             )}
 
             {loading ? (
-              <p className="subtle">Loading...</p>
+              <div className="table">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <div className="table-row" key={`skeleton-${index}`}>
+                    <div className="skeleton-line" />
+                    <div className="skeleton-line" />
+                    <div className="skeleton-line" />
+                    <div className="skeleton-line" />
+                    <div className="skeleton-line" />
+                    <div className="skeleton-line" />
+                  </div>
+                ))}
+              </div>
             ) : leads.length === 0 ? (
               <div className="empty-state">
                 <p className="subtle">No leads yet. Create your first lead to kickstart the pipeline.</p>
@@ -756,6 +964,7 @@ function App() {
                         <option value="qualified">Qualified</option>
                         <option value="converted">Converted</option>
                         <option value="lost">Lost</option>
+                        <option value="pending">Pending</option>
                       </select>
                     </span>
                     <span>{lead.source}</span>
@@ -816,6 +1025,9 @@ function App() {
                   <option value="social">Social</option>
                   <option value="cold_call">Cold call</option>
                   <option value="event">Event</option>
+                  <option value="linkedin">LinkedIn</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="cold_email">Cold email</option>
                 </select>
                 <select name="status" value={editForm.status} onChange={handleEditChange}>
                   <option value="new">New</option>
@@ -823,12 +1035,49 @@ function App() {
                   <option value="qualified">Qualified</option>
                   <option value="converted">Converted</option>
                   <option value="lost">Lost</option>
+                  <option value="pending">Pending</option>
                 </select>
                 <textarea name="notes" placeholder="Notes" value={editForm.notes} onChange={handleEditChange} rows="3" />
                 <button className="btn" type="submit" disabled={loading}>
                   {loading ? 'Saving...' : 'Save changes'}
                 </button>
               </form>
+
+              <div className="notes">
+                <h3>Notes</h3>
+                <div className="notes-form">
+                  <input
+                    placeholder="Add a note"
+                    value={noteText}
+                    onChange={(event) => setNoteText(event.target.value)}
+                  />
+                  <button
+                    className="btn ghost"
+                    onClick={() => {
+                      if (!noteText.trim()) return;
+                      addNote(editingLead._id, noteText.trim());
+                      setNoteText('');
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+                {editingLead.notesLog?.length ? (
+                  <ul className="notes-list">
+                    {editingLead.notesLog.slice().reverse().map((note) => (
+                      <li key={note._id}>
+                        <span>{note.text}</span>
+                        <span className="subtle">{new Date(note.createdAt).toLocaleString()}</span>
+                        <button className="btn tiny danger" onClick={() => deleteNote(editingLead._id, note._id)}>
+                          Delete
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="subtle">No notes yet.</p>
+                )}
+              </div>
               {editingLead.activities?.length > 0 && (
                 <div className="activity">
                   <h3>Activity</h3>

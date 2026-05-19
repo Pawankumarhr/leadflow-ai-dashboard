@@ -5,7 +5,7 @@ const createUserSchema = Joi.object({
   lastName: Joi.string().trim().min(2).max(50).required(),
   email: Joi.string().email().required(),
   password: Joi.string().min(6).max(128).required(),
-  role: Joi.string().valid('admin', 'sales').optional(),
+  role: Joi.string().valid('admin', 'manager', 'sales').optional(),
 });
 
 const refreshSchema = Joi.object({
@@ -13,7 +13,7 @@ const refreshSchema = Joi.object({
 });
 
 const updateUserSchema = Joi.object({
-  role: Joi.string().valid('admin', 'sales'),
+  role: Joi.string().valid('admin', 'manager', 'sales'),
   isActive: Joi.boolean(),
 }).min(1);
 
