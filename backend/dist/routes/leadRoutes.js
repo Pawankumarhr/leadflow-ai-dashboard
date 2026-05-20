@@ -1,0 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const auth_1 = __importDefault(require("../middleware/auth"));
+const roles_1 = __importDefault(require("../middleware/roles"));
+const validate_1 = __importDefault(require("../middleware/validate"));
+const leadSchemas_1 = require("../validation/leadSchemas");
+const leadController_1 = require("../controllers/leadController");
+const router = express_1.default.Router();
+router.use(auth_1.default);
+router.post('/', (0, validate_1.default)(leadSchemas_1.createLeadSchema), leadController_1.createLead);
+router.get('/', leadController_1.getLeads);
+router.get('/export', leadController_1.exportLeads);
+router.get('/:id', leadController_1.getLeadById);
+router.patch('/:id', (0, validate_1.default)(leadSchemas_1.updateLeadSchema), leadController_1.updateLead);
+router.post('/:id/notes', (0, validate_1.default)(leadSchemas_1.noteSchema), leadController_1.addNote);
+router.delete('/:id/notes/:noteId', leadController_1.deleteNote);
+router.delete('/:id', (0, roles_1.default)(['admin']), leadController_1.deleteLead);
+exports.default = router;
