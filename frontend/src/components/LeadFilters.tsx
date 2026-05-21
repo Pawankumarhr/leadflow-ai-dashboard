@@ -48,9 +48,21 @@ export default function LeadFilters({
           value={filters.search}
           onChange={onFilterChange}
         />
-        <input type="date" name="startDate" value={filters.startDate} onChange={onFilterChange} />
-        <input type="date" name="endDate" value={filters.endDate} onChange={onFilterChange} />
-        <select name="sortBy" value={filters.sortBy} onChange={onFilterChange}>
+        <input
+          type="date"
+          name="startDate"
+          value={filters.startDate}
+          onChange={onFilterChange}
+          aria-label="Start date"
+        />
+        <input
+          type="date"
+          name="endDate"
+          value={filters.endDate}
+          onChange={onFilterChange}
+          aria-label="End date"
+        />
+        <select name="sortBy" value={filters.sortBy} onChange={onFilterChange} aria-label="Sort by">
           <option value="createdAt">Sort by date</option>
           <option value="firstName">Sort by first name</option>
           <option value="lastName">Sort by last name</option>
@@ -58,7 +70,7 @@ export default function LeadFilters({
           <option value="status">Sort by status</option>
           <option value="source">Sort by source</option>
         </select>
-        <select name="status" value={filters.status} onChange={onFilterChange}>
+        <select name="status" value={filters.status} onChange={onFilterChange} aria-label="Status filter">
           <option value="">All statuses</option>
           <option value="new">New</option>
           <option value="contacted">Contacted</option>
@@ -67,7 +79,7 @@ export default function LeadFilters({
           <option value="lost">Lost</option>
           <option value="pending">Pending</option>
         </select>
-        <select name="source" value={filters.source} onChange={onFilterChange}>
+        <select name="source" value={filters.source} onChange={onFilterChange} aria-label="Source filter">
           <option value="">All sources</option>
           <option value="website">Website</option>
           <option value="referral">Referral</option>
@@ -78,7 +90,7 @@ export default function LeadFilters({
           <option value="instagram">Instagram</option>
           <option value="cold_email">Cold email</option>
         </select>
-        <select name="sort" value={filters.sort} onChange={onFilterChange}>
+        <select name="sort" value={filters.sort} onChange={onFilterChange} aria-label="Sort order">
           <option value="desc">Newest first</option>
           <option value="asc">Oldest first</option>
         </select>

@@ -14,16 +14,35 @@ const listAnalytics = async (_req, res) => {
         const active = await Lead_1.default.countDocuments({
             status: { $in: ['new', 'contacted', 'qualified', 'pending'] },
         });
-        const byStatus = await Lead_1.default.aggregate([
+        const byStatusRaw = await Lead_1.default.aggregate([
             { $group: { _id: '$status', count: { $sum: 1 } } },
             { $project: { _id: 0, status: '$_id', count: 1 } },
-            { $sort: { status: 1 } },
         ]);
-        const bySource = await Lead_1.default.aggregate([
+        const bySourceRaw = await Lead_1.default.aggregate([
             { $group: { _id: '$source', count: { $sum: 1 } } },
             { $project: { _id: 0, source: '$_id', count: 1 } },
-            { $sort: { source: 1 } },
         ]);
+        // Define ordering, labels and colors so frontend can render consistent legends
+        const statusOrder = [
+            { key: 'new', label: 'New', color: '#06b6d4' },
+            { key: 'contacted', label: 'Contacted', color: '#f59e0b' },
+            { key: 'qualified', label: 'Qualified', color: '#84cc16' },
+            { key: 'converted', label: 'Converted', color: '#10b981' },
+            { key: 'lost', label: 'Lost', color: '#ef4444' },
+            { key: 'pending', label: 'Pending', color: '#7c3aed' },
+        ];
+        const sourceOrder = [
+            { key: 'website', label: 'Website', color: '#22d3ee' },
+            { key: 'referral', label: 'Referral', color: '#2563eb' },
+            { key: 'social', label: 'Social', color: '#14b8a6' },
+            { key: 'cold_call', label: 'Cold Call', color: '#60a5fa' },
+            { key: 'event', label: 'Event', color: '#818cf8' },
+            { key: 'linkedin', label: 'LinkedIn', color: '#a855f7' },
+            { key: 'instagram', label: 'Instagram', color: '#f472b6' },
+            { key: 'cold_email', label: 'Cold Email', color: '#f59e0b' },
+        ];
+        const byStatus = statusOrder.map((s) => ({ status: s.key, count: (byStatusRaw.find((r) => r.status === s.key)?.count) || 0, label: s.label, color: s.color }));
+        const bySource = sourceOrder.map((s) => ({ source: s.key, count: (bySourceRaw.find((r) => r.source === s.key)?.count) || 0, label: s.label, color: s.color }));
         const conversionsByMonth = await Lead_1.default.aggregate([
             { $match: { status: 'converted' } },
             {

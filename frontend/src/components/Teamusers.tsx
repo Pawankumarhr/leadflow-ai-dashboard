@@ -48,7 +48,7 @@ export default function TeamUsers({
         {userErrors.email && <span className="field-error">{userErrors.email}</span>}
         <input name="password" placeholder="Temporary password" value={userForm.password} onChange={onUserChange} className={userErrors.password ? 'input-error' : ''} required />
         {userErrors.password && <span className="field-error">{userErrors.password}</span>}
-        <select name="role" value={userForm.role} onChange={onUserChange}>
+        <select name="role" value={userForm.role} onChange={onUserChange} aria-label="User role">
           <option value="sales">Sales</option>
           <option value="admin">Admin</option>
           <option value="manager">Manager</option>

@@ -16,13 +16,15 @@ export type SortBy = 'createdAt' | 'firstName' | 'lastName' | 'email' | 'status'
 export type PresetKey = '' | 'new' | 'qualified' | 'lost';
 export type FormFieldEvent = ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>;
 export type ActivityType = 'all' | 'created' | 'updated' | 'status_changed';
-export type UserRole = 'admin' | 'manager' | 'sales';
+export type UserRole = 'admin' | 'manager' | 'sales' | 'viewer';
+export type AuthRole = 'admin' | 'manager' | 'sales' | 'viewer';
 
 export interface AuthForm {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
+  role: AuthRole;
 }
 
 export interface LeadForm {
@@ -108,6 +110,7 @@ export interface AuthErrors {
   lastName?: string;
   email?: string;
   password?: string;
+  role?: string;
 }
 
 export interface LeadErrors {

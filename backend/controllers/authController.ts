@@ -35,7 +35,7 @@ const issueTokens = async (user: any) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, role } = req.body;
 
     if (!email || !password || !firstName || !lastName) {
       return res.status(400).json({ message: 'Missing required fields' });
@@ -51,6 +51,7 @@ export const register = async (req: Request, res: Response) => {
       password,
       firstName,
       lastName,
+      role,
     });
 
     const { accessToken, refreshToken } = await issueTokens(user);
@@ -152,8 +153,8 @@ export const logout = async (req: Request, res: Response) => {
       return res.status(204).send();
     }
 
-    user.refreshTokenHash = null;
-    user.refreshTokenExpiresAt = null;
+    (user as any).refreshTokenHash = null;
+    (user as any).refreshTokenExpiresAt = null;
     await user.save();
     return res.status(204).send();
   } catch (error) {

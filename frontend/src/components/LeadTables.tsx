@@ -78,6 +78,7 @@ export default function LeadsTable({
                 className="status-select"
                 value={lead.status}
                 onChange={(e) => onStatusChange(lead._id, e.target.value as LeadStatus)}
+                aria-label="Lead status"
               >
                 <option value="new">New</option>
                 <option value="contacted">Contacted</option>

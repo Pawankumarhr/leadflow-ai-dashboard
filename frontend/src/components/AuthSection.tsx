@@ -57,6 +57,18 @@ export default function AuthSection({
               required
             />
             {authErrors.lastName && <span className="field-error">{authErrors.lastName}</span>}
+            <select
+              name="role"
+              value={authForm.role}
+              onChange={onChange}
+              className={authErrors.role ? 'input-error' : ''}
+              aria-label="Account role"
+              required
+            >
+              <option value="admin">Admin</option>
+              <option value="sales">Sales</option>
+            </select>
+            {authErrors.role && <span className="field-error">{authErrors.role}</span>}
           </>
         )}
         <input

@@ -9,6 +9,16 @@ type AppHeaderProps = {
 };
 
 function AppHeader({ theme, isAuthed, user, onToggleTheme, onLogout }: AppHeaderProps) {
+  const roleLabel = user?.role === 'admin'
+    ? 'Admin'
+    : user?.role === 'sales'
+      ? 'Sales Staff'
+      : user?.role === 'manager'
+        ? 'Manager'
+        : user?.role === 'viewer'
+          ? 'Viewer'
+          : '';
+
   return (
     <header className="app-header">
       <div>
@@ -23,7 +33,7 @@ function AppHeader({ theme, isAuthed, user, onToggleTheme, onLogout }: AppHeader
           <div className="user-box">
             <div>
               <p className="user-name">{user?.firstName} {user?.lastName}</p>
-              <p className="subtle">{user?.role}</p>
+              <p className="subtle">{roleLabel}</p>
             </div>
             <button className="btn ghost" onClick={onLogout}>Log out</button>
           </div>

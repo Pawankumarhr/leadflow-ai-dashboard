@@ -32,7 +32,7 @@ const issueTokens = async (user) => {
 };
 const register = async (req, res) => {
     try {
-        const { email, password, firstName, lastName } = req.body;
+        const { email, password, firstName, lastName, role } = req.body;
         if (!email || !password || !firstName || !lastName) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
@@ -45,6 +45,7 @@ const register = async (req, res) => {
             password,
             firstName,
             lastName,
+            role,
         });
         const { accessToken, refreshToken } = await issueTokens(user);
         return res.status(201).json({

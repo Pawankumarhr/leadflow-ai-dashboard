@@ -57,7 +57,7 @@ export default function EditLeadPanel({
         <input name="email" placeholder="Email" value={editForm.email} onChange={onEditChange} required />
         <input name="phone" placeholder="Phone" value={editForm.phone} onChange={onEditChange} />
         <input name="company" placeholder="Company" value={editForm.company} onChange={onEditChange} />
-        <select name="source" value={editForm.source} onChange={onEditChange}>
+        <select name="source" value={editForm.source} onChange={onEditChange} aria-label="Lead source">
           <option value="website">Website</option>
           <option value="referral">Referral</option>
           <option value="social">Social</option>
@@ -67,7 +67,7 @@ export default function EditLeadPanel({
           <option value="instagram">Instagram</option>
           <option value="cold_email">Cold email</option>
         </select>
-        <select name="status" value={editForm.status} onChange={onEditChange}>
+        <select name="status" value={editForm.status} onChange={onEditChange} aria-label="Lead status">
           <option value="new">New</option>
           <option value="contacted">Contacted</option>
           <option value="qualified">Qualified</option>
@@ -126,6 +126,7 @@ export default function EditLeadPanel({
               onChange={(e) =>
                 onActivityFilterChange({ ...activityFilter, type: e.target.value as ActivityType })
               }
+              aria-label="Activity type"
             >
               <option value="all">All types</option>
               <option value="created">Created</option>

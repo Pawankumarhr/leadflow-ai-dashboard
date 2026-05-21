@@ -23,7 +23,7 @@ export default function CreateLeadForm({ leadForm, leadErrors, loading, onChange
         <input name="phone" placeholder="Phone" value={leadForm.phone} onChange={onChange} />
         {leadErrors.phone && <span className="field-error">{leadErrors.phone}</span>}
         <input name="company" placeholder="Company" value={leadForm.company} onChange={onChange} />
-        <select name="source" value={leadForm.source} onChange={onChange}>
+        <select name="source" value={leadForm.source} onChange={onChange} aria-label="Lead source">
           <option value="website">Website</option>
           <option value="referral">Referral</option>
           <option value="social">Social</option>
@@ -34,7 +34,7 @@ export default function CreateLeadForm({ leadForm, leadErrors, loading, onChange
           <option value="cold_email">Cold email</option>
         </select>
         {leadErrors.source && <span className="field-error">{leadErrors.source}</span>}
-        <select name="status" value={leadForm.status} onChange={onChange}>
+        <select name="status" value={leadForm.status} onChange={onChange} aria-label="Lead status">
           <option value="new">New</option>
           <option value="contacted">Contacted</option>
           <option value="qualified">Qualified</option>

@@ -5,7 +5,7 @@ declare global {
     interface Request {
       user?: {
         _id: Types.ObjectId;
-        role: 'admin' | 'manager' | 'sales';
+        role: 'admin' | 'manager' | 'sales' | 'viewer';
         isActive: boolean;
       };
     }

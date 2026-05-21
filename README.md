@@ -68,3 +68,16 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Project Notes
+
+- The frontend development server is configured to run on [http://localhost:3001](http://localhost:3001).
+- If the frontend compile fails with missing package files under `node_modules`, reinstall dependencies from the `frontend/` folder:
+
+```bash
+cd frontend
+npm install
+npm start
+```
+
+- The backend health check is available at [http://localhost:5000/health](http://localhost:5000/health).

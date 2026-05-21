@@ -10,6 +10,7 @@ exports.registerSchema = joi_1.default.object({
     lastName: joi_1.default.string().trim().min(2).max(50).required(),
     email: joi_1.default.string().email().required(),
     password: joi_1.default.string().min(6).max(128).required(),
+    role: joi_1.default.string().valid('admin', 'manager', 'sales', 'viewer').default('sales'),
 });
 exports.loginSchema = joi_1.default.object({
     email: joi_1.default.string().email().required(),
